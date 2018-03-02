@@ -1,0 +1,5 @@
+cd flaskr
+pip3 install --editable .
+set FLASK_APP=flaskr/flaskr.py
+python3 -m flask initdb
+python3 -m flask run
