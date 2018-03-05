@@ -5,9 +5,13 @@
   <h1>Assignment On Flask and WebAPI</h1>
   <div class=metanav>
   {% if not session.logged_in %}
-    <a href="{{ url_for('login') }}">log in</a>
+    <form action="login">
+      <button name="loginButton">Login</button>
+    </form>
   {% else %}
-    <a href="{{ url_for('logout') }}">log out</a>
+    <form action="logout">
+     <button name="logoutButton">Logout</button>
+    </form>
   {% endif %}
   </div>
   {% for message in get_flashed_messages() %}

@@ -1,6 +1,7 @@
 # all the imports
 import os
 import sqlite3
+import random
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 app = Flask(__name__)
@@ -61,26 +62,60 @@ def add_entry():
     if not session.get('logged_in'):
         abort(401)
     db = get_db()
-    db.execute('insert into entries (name, phone, verification_code) values (?, ?, ?)',
+    cur = db.execute('insert into entries (name, phone, verification_code) values (?, ?, ?)',
                [request.form['name'], request.form['phone'], request.form['verification_code']])
-    db.commit()
+
     flash('New entry was successfully posted')
     return redirect(url_for('show_entries'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    db = get_db()
     error = None
     if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
+        usrname = request.form['username']
+        cur = db.execute('''select * from entries where name = ?''', (usrname,)).fetchall()
+        for c in cur:
+            if usrname != c["name"]:
+                error = 'Invalid Username'
+            elif int(request.form['password']) != app.config['PASSWORD']:
+                error = 'Invalid password'
+            else:
+                rand = random.randrange(1000, 9999)
+                db = get_db()
+                usrname = request.form['username']
+                flash(usrname)
+                db.execute('''update entries set verification_code = ? where name = ?''', (rand, usrname))
+                db.commit()
+                flash('Code: %d' % rand)
+
+            return redirect(url_for('verify'))
+
     return render_template('login.html', error=error)
+
+
+@app.route('/verify', methods=['GET', 'POST'])
+def verify():
+    db = get_db()
+
+    error = None
+    if request.method == 'POST':
+        usrname = request.form['username1']
+
+        cur = db.execute('''select * from entries where name = ?''', (usrname,)).fetchall()
+        for c in cur:
+            flash('%d' % c["verification_code"])
+            if usrname != c["name"]:
+                error = 'Invalid Username'
+            elif int(request.form['verificationCode1']) != c["verification_code"]:
+                error = 'Invalid Verification Code'
+            else:
+                session['logged_in'] = True
+                flash('You were logged in')
+                return redirect(url_for('show_entries'))
+
+    return render_template('verify.html', error=error)
 
 
 @app.route('/logout')
