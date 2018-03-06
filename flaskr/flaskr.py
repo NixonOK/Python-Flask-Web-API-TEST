@@ -49,24 +49,30 @@ def close_db(error):
         g.sqlite_db.close()
 
 
-@app.route('/')
+@app.route('/show_entries', methods=['GET', 'POST'])
 def show_entries():
-    db = get_db()
-    cur = db.execute('select name, phone from entries order by id desc')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
+    if request.method == 'POST':
+        db = get_db()
+        cur = db.execute('''select * from entries where phone = ?''', (request.form['phone_search'],))
+        entries = cur.fetchall()
+        return render_template('show_entries.html', entries=entries)
+    else:
+        return render_template('show_entries.html', entries=())
 
 
-@app.route('/add', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    cur = db.execute('insert into entries (name, phone, verification_code) values (?, ?, ?)',
-               [request.form['name'], request.form['phone'], request.form['verification_code']])
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        db = get_db()
+        db.execute('insert into entries (name, phone, verification_code, password) values (?, ?, ?, ?)',
+                   [request.form['username_reg'], request.form['phone_reg'], 1111, request.form['password_reg']])
+        db.commit()
+        flash('Successfully Registered')
+        return render_template('login.html')
+    else:
+        error = 'Sign Up please!'
 
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
+    return render_template('register.html', error=error)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -79,7 +85,7 @@ def login():
         for c in cur:
             if usrname != c["name"]:
                 error = 'Invalid Username'
-            elif int(request.form['password']) != app.config['PASSWORD']:
+            elif request.form['password'] != app.config['PASSWORD']:
                 error = 'Invalid password'
             else:
                 rand = random.randrange(1000, 9999)
@@ -89,9 +95,8 @@ def login():
                 db.execute('''update entries set verification_code = ? where name = ?''', (rand, usrname))
                 db.commit()
                 flash('Code: %d' % rand)
-
-            return redirect(url_for('verify'))
-
+                return redirect(url_for('verify'))
+            flash('No account found, Please sign-up')
     return render_template('login.html', error=error)
 
 
@@ -122,4 +127,4 @@ def verify():
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
-    return redirect(url_for('show_entries'))
+    return redirect(url_for('login'))

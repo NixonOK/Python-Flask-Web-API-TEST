@@ -1,7 +1,6 @@
 MANIFEST.in
 commands.txt
 setup.py
-flaskr/flaskr.db
 flaskr/flaskr.py
 flaskr/schema.sql
 flaskr.egg-info/PKG-INFO
@@ -13,11 +12,13 @@ flaskr/__pycache__/flaskr.cpython-35.pyc
 flaskr/static/style.css
 flaskr/templates/layout.html
 flaskr/templates/login.html
+flaskr/templates/register.html
 flaskr/templates/show_entries.html
 flaskr/templates/verify.html
 flaskr/__pycache__/flaskr.cpython-35.pyc
 flaskr/static/style.css
 flaskr/templates/layout.html
 flaskr/templates/login.html
+flaskr/templates/register.html
 flaskr/templates/show_entries.html
 flaskr/templates/verify.html

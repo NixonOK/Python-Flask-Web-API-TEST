@@ -1,15 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if session.logged_in %}
-    <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
+    <form action="{{ url_for('show_entries') }}" method=post class=add-entry>
       <dl>
-        <dt>Name:
-        <dd><input type=text size=30 name=name>
         <dt>Phone:
-        <dd><input type=text size=30 name=phone>
-        <dt>Verification Code:
-        <dd><input type=text size=30 name=verification_code>
-        <dd><input type=submit value=Share_Button>
+        <dd><input type=text size=30 name=phone_search>
+        <dd><input type=submit value="Search Button">
       </dl>
     </form>
   {% endif %}
